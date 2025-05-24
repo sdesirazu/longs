@@ -201,9 +201,13 @@ def test_ticker(sheet):
     sheet.append_rows(big_rows)
 
 def connect_sheet():
-    key_path = "/Users/js2009au/Projects/IBKR/creds.json"
+    TOKEN = os.environ['TOKEN']
 
-    scoped_credentials = service_account.Credentials.from_service_account_file(key_path, scopes = [ 'https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive' ],)
+    service_account_info = json.loads(TOKEN)
+
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
+
+    scoped_credentials = credentials.with_scopes(scopes)
 
     file = gspread.authorize(scoped_credentials) # authenticate the JSON key with gspread
 
