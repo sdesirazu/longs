@@ -2,12 +2,12 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python application
+name: Python Scheduled application
 
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '10 13 * * SAT'
+    - cron:  '10 05 * * *'
 
 permissions:
   contents: read
