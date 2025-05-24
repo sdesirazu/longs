@@ -12,6 +12,7 @@ from datetime import date
 from investing import retrieve_fred
 from fear_and_greed import retrieve_fear_and_greed
 import time
+import os
 
 def get_all_finviz_stocks(sheet):
     worksheet = sheet.worksheet("Finviz") #replace sheet_name with the name that corresponds to yours, e.g, it can be sheet1
