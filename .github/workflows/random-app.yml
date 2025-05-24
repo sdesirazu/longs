@@ -45,3 +45,5 @@ jobs:
     - name: Test with pytest
       run: |
         pytest sso.py
+      env:
+        TOKEN: ${{ secrets.RANDOM_SECRET}}
