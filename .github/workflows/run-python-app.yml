@@ -26,6 +26,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install numpy==1.26.4
+        pip install lxml
+        pip install --upgrade pandas_ta
         pip install flake8 pytest
         pip install pandas yfinance
         pip install gspread
@@ -38,7 +41,7 @@ jobs:
       run: |
         python sso.py
       env:
-        TOKEN: ${{ secrets.RANDOM_SECRET}}
+        TOKEN: ${{ secrets.TOKEN}}
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
