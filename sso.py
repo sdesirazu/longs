@@ -203,6 +203,11 @@ def test_ticker(sheet):
     sheet.append_rows(big_rows)
 
 def connect_sheet():
+    scopes = [
+        'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive'
+    ]
+
     TOKEN = os.environ['TOKEN']
 
     service_account_info = json.loads(TOKEN)
