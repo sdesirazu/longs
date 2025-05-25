@@ -386,29 +386,21 @@ rowdata.append(now_time)
 
 # get historical pricing data
 df = yf.Ticker('^spx')
-time.sleep(2)  # Sleep for 5 seconds
 rowdata.append(float(f"{df.info['fiftyDayAverage']}"))
-time.sleep(2)  # Sleep for 5 seconds
 rowdata.append(float(f"{df.info['regularMarketPrice']}"))
-time.sleep(2)  # Sleep for 5 seconds
 df = df.history(period='6mo')[['Open', 'High', 'Low', 'Close']]
-time.sleep(2)  # Sleep for 5 seconds
 # Add some indicators
 df.ta.stoch(high='high', low='low', k=14, d=3, append=True)
-time.sleep(2)  # Sleep for 5 seconds
 sto_k=df.iloc[-1:]['STOCHk_14_3_3'].iloc[0]
 sto_d=df[-1:]['STOCHd_14_3_3'].iloc[0]
 rowdata.append(float(f"{sto_k}"))
 rowdata.append(float(f"{sto_d}"))
 rsi=df.ta.rsi().iloc[-1:].iloc[0]
 rowdata.append(float(f"{rsi}"))
-time.sleep(2)  # Sleep for 5 seconds
 
 # get the current $VIX
 df = yf.Ticker('^VIX')
-time.sleep(1)  # Sleep for 5 seconds
 vix=df.info['regularMarketPrice']
-time.sleep(2)  # Sleep for 5 seconds
 rowdata.append(float(f"{vix}"))
 
 list_of_spy_stocks = get_spy()
