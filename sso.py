@@ -358,21 +358,25 @@ def retrieve_and_sell(symbol, rowdata, sheet):
         return
 
     df = df.history(period='6mo')[['Open', 'High', 'Low', 'Close', 'Volume']]
-    rsi = df.ta.rsi().iloc[-1:].iloc[0]
-    # check if rsi has reversed.  It needs to be below 70 now and above 70 yesterday
-    rsilist = df.ta.rsi().tolist()
-    rsilist.reverse()
-    now_time = datetime.now(timezone('Australia/Sydney'))
-    fmt = "%Y-%m-%d %H:%M:%S %Z%z"
-    now_time = now_time.strftime(fmt)
-    if rsilist[1] >= 70 and rsilist[0] <= 70:
-        rowdata = []
-        print("Symbol", symbol, " SELL", "REVERSAL") 
-        rowdata.append(now_time)
-        rowdata.append(f"{symbol}") 
-        rowdata.append("OK TO SELL REVERSAL") 
-        rowdata.append(get_current_price(symbol)) 
-        sheet.append_row(rowdata)
+    rsi_series = df.ta.rsi()
+    if rsi_series.empty:
+        print("RSI calculation returned an empty Series.")
+    else:
+        rsi = df.ta.rsi().iloc[-1:].iloc[0]
+        # check if rsi has reversed.  It needs to be below 70 now and above 70 yesterday
+        rsilist = df.ta.rsi().tolist()
+        rsilist.reverse()
+        now_time = datetime.now(timezone('Australia/Sydney'))
+        fmt = "%Y-%m-%d %H:%M:%S %Z%z"
+        now_time = now_time.strftime(fmt)
+        if rsilist[1] >= 70 and rsilist[0] <= 70:
+            rowdata = []
+            print("Symbol", symbol, " SELL", "REVERSAL") 
+            rowdata.append(now_time)
+            rowdata.append(f"{symbol}") 
+            rowdata.append("OK TO SELL REVERSAL") 
+            rowdata.append(get_current_price(symbol)) 
+            sheet.append_row(rowdata)
 
 ##################################################
 [sheet, spreadsheet] = connect_sheet()
