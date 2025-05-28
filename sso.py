@@ -315,47 +315,31 @@ def old_retrieve_and_store(symbol, rowdata, sheet):
                 rowdata.append(get_current_price(symbol)) 
                 sheet.append_row(rowdata)
 
-def retrieve_and_store(symbol, rowdata, sheet):
-    try:
-        df = yf.Ticker(symbol)
-        data = df.history(period="1d")  # Attempt to get historical data
-    
-        if data.empty:
-            print(f"No price data found for {symbol}. It may be delisted.")
-            return
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return
+def retrieve_and_store(df, symbol, rowdata, sheet):
 
     df = df.history(period='6mo')[['Open', 'High', 'Low', 'Close', 'Volume']]
     # Add some indicators
-    rsi = df.ta.rsi().iloc[-1:].iloc[0]
-    # check if rsi has reversed.  It needs to be above 30 now and in  previousndays below 30
-    rsilist = df.ta.rsi().tolist()
-    rsilist.reverse()
-    now_time = datetime.now(timezone('Australia/Sydney'))
-    fmt = "%Y-%m-%d %H:%M:%S %Z%z"
-    now_time = now_time.strftime(fmt)
-    if rsilist[0] >= 30 and rsilist[1] <= 30:
-        rowdata = []
-        print("Symbol", symbol, " TRADE", "REVERSAL") 
-        rowdata.append(now_time)
-        rowdata.append(f"{symbol}") 
-        rowdata.append("OK TO TRADE REVERSAL") 
-        rowdata.append(get_current_price(symbol)) 
-        sheet.append_row(rowdata)
+    rsi_series = df.ta.rsi()
+    if rsi_series.empty:
+        print("RSI calculation returned an empty Series.")
+    else:
+        rsi = df.ta.rsi().iloc[-1:].iloc[0]
+        # check if rsi has reversed.  It needs to be above 30 now and in  previousndays below 30
+        rsilist = df.ta.rsi().tolist()
+        rsilist.reverse()
+        now_time = datetime.now(timezone('Australia/Sydney'))
+        fmt = "%Y-%m-%d %H:%M:%S %Z%z"
+        now_time = now_time.strftime(fmt)
+        if rsilist[0] >= 30 and rsilist[1] <= 30:
+            rowdata = []
+            print("Symbol", symbol, " TRADE", "REVERSAL") 
+            rowdata.append(now_time)
+            rowdata.append(f"{symbol}") 
+            rowdata.append("OK TO TRADE REVERSAL") 
+            rowdata.append(get_current_price(symbol)) 
+            sheet.append_row(rowdata)
     
-def retrieve_and_sell(symbol, rowdata, sheet):
-    try:
-        df = yf.Ticker(symbol)
-        data = df.history(period="1d")  # Attempt to get historical data
-    
-        if data.empty:
-            print(f"No price data found for {symbol}. It may be delisted.")
-            return
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return
+def retrieve_and_sell(df, symbol, rowdata, sheet):
 
     df = df.history(period='6mo')[['Open', 'High', 'Low', 'Close', 'Volume']]
     rsi_series = df.ta.rsi()
@@ -393,12 +377,14 @@ df = yf.Ticker('^spx')
 rowdata.append(float(f"{df.info['fiftyDayAverage']}"))
 rowdata.append(float(f"{df.info['regularMarketPrice']}"))
 df = df.history(period='6mo')[['Open', 'High', 'Low', 'Close']]
+
 # Add some indicators
 df.ta.stoch(high='high', low='low', k=14, d=3, append=True)
 sto_k=df.iloc[-1:]['STOCHk_14_3_3'].iloc[0]
 sto_d=df[-1:]['STOCHd_14_3_3'].iloc[0]
 rowdata.append(float(f"{sto_k}"))
 rowdata.append(float(f"{sto_d}"))
+
 rsi=df.ta.rsi().iloc[-1:].iloc[0]
 rowdata.append(float(f"{rsi}"))
 
@@ -454,11 +440,6 @@ if vix < 25 and fred <= 0 and fear_and_greed < 45:
         rowdata.append("SHARES NEUTRAL RISK")
     else:
         rowdata.append("SHARES HIGH RISK")
-    for item in list_of_stocks:
-        retrieve_and_store(item,rowdata, share_sheet)
-        time.sleep(1)  # Sleep for 5 seconds
-        retrieve_and_sell(item,rowdata, sell_sheet)
-        time.sleep(1)  # Sleep for 5 seconds
 elif vix > 25 and vix < 30 and fred > 0 and fred < 1 and fear_and_greed > 45 and fear_and_greed < 55:
     rowdata.append("MARKETS NEUTRAL RISK")
     if rsi < 30 and sto_k < 20 and s5fi < 40:
@@ -467,26 +448,28 @@ elif vix > 25 and vix < 30 and fred > 0 and fred < 1 and fear_and_greed > 45 and
         rowdata.append("SHARES NEUTRAL RISK")
     else:
         rowdata.append("SHARES HIGH RISK")
-    for item in list_of_stocks:
-        retrieve_and_store(item,rowdata, share_sheet)
-        time.sleep(2)  # Sleep for 5 seconds
-        retrieve_and_sell(item,rowdata, sell_sheet)
-        time.sleep(2)  # Sleep for 5 seconds
 elif vix > 30:
     rowdata.append("MARKETS HIGH RISK")
     rowdata.append("SELL FOR PROFIT")
-    for item in list_of_stocks:
-        retrieve_and_store(item,rowdata, share_sheet)
-        time.sleep(1)  # Sleep for 5 seconds
-        retrieve_and_sell(item,rowdata, sell_sheet)
-        time.sleep(1)  # Sleep for 5 seconds
 else:
     rowdata.append("UNKNOWN RISK")
     rowdata.append("UNKNOWN")
-    for item in list_of_stocks:
-        retrieve_and_store(item,rowdata, share_sheet)
-        time.sleep(2)  # Sleep for 5 seconds
-        retrieve_and_sell(item,rowdata, sell_sheet)
-        time.sleep(2)  # Sleep for 5 seconds
 
 write_sheet(rowdata,sheet)
+
+for item in list_of_stocks:
+    try:
+        df = yf.Ticker(symbol)
+        data = df.history(period="1d")  # Attempt to get historical data
+    
+        if data.empty:
+            print(f"No price data found for {symbol}. It may be delisted.")
+            continue
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        continue
+
+    retrieve_and_store(df, item,rowdata, share_sheet)
+    time.sleep(1)  # Sleep for 5 seconds
+    retrieve_and_sell(df, item,rowdata, sell_sheet)
+    time.sleep(1)  # Sleep for 5 seconds
