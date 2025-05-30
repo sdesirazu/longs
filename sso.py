@@ -459,11 +459,11 @@ write_sheet(rowdata,sheet)
 
 for item in list_of_stocks:
     try:
-        df = yf.Ticker(symbol)
+        df = yf.Ticker(item)
         data = df.history(period="1d")  # Attempt to get historical data
     
         if data.empty:
-            print(f"No price data found for {symbol}. It may be delisted.")
+            print(f"No price data found for {item}. It may be delisted.")
             continue
     except Exception as e:
         print(f"An error occurred: {e}")
