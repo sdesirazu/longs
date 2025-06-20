@@ -15,6 +15,15 @@ from fear_and_greed import retrieve_fear_and_greed
 import time
 import os
 
+def log_to_sheet(worksheet, value):
+    # print logs to screen and to the LOGS sheet
+    big_rows = []
+    rowdata = []
+    rowdata.append(value)
+    big_rows.append(rowdata)
+    worksheet.append_rows(big_rows)
+    print(value)
+
 def get_all_finviz_stocks(sheet):
     worksheet = sheet.worksheet("Finviz") #replace sheet_name with the name that corresponds to yours, e.g, it can be sheet1
     rows = worksheet.get_all_values()
@@ -268,15 +277,9 @@ def get_spy():
 
     return(df['Symbol'].tolist())
 
-def get_current_price(ticker_symbol):
-    stock = yf.Ticker(ticker_symbol)
-
-    # Get the current share price
-    current_price = stock.history(period='1d')['Close'][0]
-    return current_price
 
 # this includes the whole set of rules from Tino's spreadsheet
-def old_retrieve_and_store(symbol, rowdata, sheet):
+def old_retrieve_and_store(current_price, symbol, rowdata, sheet):
     try:
         df = yf.Ticker(symbol)
         data = df.history(period="1d")  # Attempt to get historical data
@@ -312,16 +315,16 @@ def old_retrieve_and_store(symbol, rowdata, sheet):
                 rowdata.append(now_time)
                 rowdata.append(f"{symbol}") 
                 rowdata.append("OK TO TRADE REVERSAL") 
-                rowdata.append(get_current_price(symbol)) 
+                rowdata.append(current_price) 
                 sheet.append_row(rowdata)
 
-def retrieve_and_store(df, symbol, rowdata, sheet):
+def retrieve_and_store(current_price, df, symbol, rowdata, sheet, logs_sheet):
 
     df = df.history(period='6mo')[['Open', 'High', 'Low', 'Close', 'Volume']]
     # Add some indicators
     rsi_series = df.ta.rsi()
     if rsi_series.empty:
-        print("RSI calculation returned an empty Series.")
+        log_to_sheet(logs_sheet, "RSI calculation returned an empty Series.")
     else:
         rsi = df.ta.rsi().iloc[-1:].iloc[0]
         # check if rsi has reversed.  It needs to be above 30 now and in  previousndays below 30
@@ -332,19 +335,19 @@ def retrieve_and_store(df, symbol, rowdata, sheet):
         now_time = now_time.strftime(fmt)
         if rsilist[0] >= 30 and rsilist[1] <= 30:
             rowdata = []
-            print("Symbol", symbol, " TRADE", "REVERSAL") 
+            log_to_sheet(logs_sheet, "Symbol", symbol, " TRADE", "REVERSAL") 
             rowdata.append(now_time)
             rowdata.append(f"{symbol}") 
             rowdata.append("OK TO TRADE REVERSAL") 
-            rowdata.append(get_current_price(symbol)) 
+            rowdata.append(current_price) 
             sheet.append_row(rowdata)
     
-def retrieve_and_sell(df, symbol, rowdata, sheet):
+def retrieve_and_sell(current_price, df, symbol, rowdata, sheet, logs_sheet):
 
     df = df.history(period='6mo')[['Open', 'High', 'Low', 'Close', 'Volume']]
     rsi_series = df.ta.rsi()
     if rsi_series.empty:
-        print("RSI calculation returned an empty Series.")
+        log_to_sheet(logs_sheet,"RSI calculation returned an empty Series.")
     else:
         rsi = df.ta.rsi().iloc[-1:].iloc[0]
         # check if rsi has reversed.  It needs to be below 70 now and above 70 yesterday
@@ -355,15 +358,17 @@ def retrieve_and_sell(df, symbol, rowdata, sheet):
         now_time = now_time.strftime(fmt)
         if rsilist[1] >= 70 and rsilist[0] <= 70:
             rowdata = []
-            print("Symbol", symbol, " SELL", "REVERSAL") 
+            log_to_sheet(logs_sheet, "Symbol", symbol, " SELL", "REVERSAL") 
             rowdata.append(now_time)
             rowdata.append(f"{symbol}") 
             rowdata.append("OK TO SELL REVERSAL") 
-            rowdata.append(get_current_price(symbol)) 
+            rowdata.append(current_price) 
             sheet.append_row(rowdata)
 
 ##################################################
 [sheet, spreadsheet] = connect_sheet()
+logs_sheet = spreadsheet.worksheet("LOGS") 
+logs_sheet.clear()
 #income_stmt_balance_sheet(spreadsheet)
 
 rowdata=[]
@@ -399,11 +404,11 @@ list_of_spy_stocks.remove('BF.B')
 list_of_stocks = get_all_finviz_stocks(spreadsheet)
     
 d = datetime.today() - timedelta(days=210)
-print("Start date:", d.date())
+log_to_sheet(logs_sheet, "Start date:", d.date())
 
 df = yf.download(tickers=list_of_spy_stocks, start=d.date(), end=date.today())
 
-df = df.stack()
+df = df.stack(future_stack=True)
 
 df['50_wma'] = df.groupby(level=1)['Close']\
                  .transform(lambda x: ta.wma(close=x, length=50))
@@ -424,6 +429,7 @@ fred=float(retrieve_fred())
 rowdata.append(float(f"{fred}"))
 fear_and_greed=float(retrieve_fear_and_greed())
 rowdata.append(float(f"{fear_and_greed}"))
+
 # retrieve and store sto and rsi for each of the tickers it might be enough for now to store last values
 ####################
 #test_ticker(spreadsheet)
@@ -432,6 +438,7 @@ clean_sheet(sheet)
 share_sheet = spreadsheet.worksheet("Shares to Trades") 
 sell_sheet = spreadsheet.worksheet("Shares to sell") 
 ####################
+
 if vix < 25 and fred <= 0 and fear_and_greed < 45:
     rowdata.append("MARKETS LOW RISK")
     if rsi < 30 and sto_k < 20 and s5fi < 40:
@@ -463,13 +470,13 @@ for item in list_of_stocks:
         data = df.history(period="1d")  # Attempt to get historical data
     
         if data.empty:
-            print(f"No price data found for {item}. It may be delisted.")
+            log_to_sheet(logs_sheet, f"No price data found for {item}. It may be delisted.")
             continue
     except Exception as e:
-        print(f"An error occurred: {e}")
+        log_to_sheet(logs_sheet, f"An error occurred: {e}")
         continue
 
-    retrieve_and_store(df, item,rowdata, share_sheet)
-    time.sleep(1)  # Sleep for 5 seconds
-    retrieve_and_sell(df, item,rowdata, sell_sheet)
+    current_price = df..history(period='1d')['Close'].iloc[0]
+    retrieve_and_store(current_price, df, item,rowdata, share_sheet,logs_sheet)
+    retrieve_and_sell(current_price, df, item,rowdata, sell_sheet,logs_sheet)
     time.sleep(1)  # Sleep for 5 seconds
