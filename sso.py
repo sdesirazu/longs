@@ -404,7 +404,7 @@ list_of_spy_stocks.remove('BF.B')
 list_of_stocks = get_all_finviz_stocks(spreadsheet)
     
 d = datetime.today() - timedelta(days=210)
-log_to_sheet(logs_sheet, "Start date:", d.date())
+log_to_sheet(logs_sheet, f"Start date: {d.date()}")
 
 df = yf.download(tickers=list_of_spy_stocks, start=d.date(), end=date.today())
 

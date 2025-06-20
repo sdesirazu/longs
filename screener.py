@@ -9,9 +9,18 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 
 def connect_sheet():
-    key_path = "/Users/js2009au/Projects/IBKR/creds.json"
+    scopes = [
+        'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive'
+    ]
 
-    scoped_credentials = service_account.Credentials.from_service_account_file(key_path, scopes = [ 'https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive' ],)
+    TOKEN = os.environ['TOKEN']
+
+    service_account_info = json.loads(TOKEN)
+
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
+
+    scoped_credentials = credentials.with_scopes(scopes)
 
     file = gspread.authorize(scoped_credentials) # authenticate the JSON key with gspread
 
@@ -20,6 +29,7 @@ def connect_sheet():
     sheet = spreadsheet.worksheet("Finviz") #replace sheet_name with the name that corresponds to yours, e.g, it can be sheet1
     
     return [sheet,spreadsheet]
+
 
 # Select the first worksheet
 [worksheet,spreadsheet] = connect_sheet()
