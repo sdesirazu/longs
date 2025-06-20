@@ -476,7 +476,7 @@ for item in list_of_stocks:
         log_to_sheet(logs_sheet, f"An error occurred: {e}")
         continue
 
-    current_price = df..history(period='1d')['Close'].iloc[0]
+    current_price = df.history(period='1d')['Close'].iloc[0]
     retrieve_and_store(current_price, df, item,rowdata, share_sheet,logs_sheet)
     retrieve_and_sell(current_price, df, item,rowdata, sell_sheet,logs_sheet)
     time.sleep(1)  # Sleep for 5 seconds
