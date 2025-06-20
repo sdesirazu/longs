@@ -335,7 +335,7 @@ def retrieve_and_store(current_price, df, symbol, rowdata, sheet, logs_sheet):
         now_time = now_time.strftime(fmt)
         if rsilist[0] >= 30 and rsilist[1] <= 30:
             rowdata = []
-            log_to_sheet(logs_sheet, "Symbol", symbol, " TRADE", "REVERSAL") 
+            log_to_sheet(logs_sheet, f"Symbol {symbol}, TRADE REVERSAL") 
             rowdata.append(now_time)
             rowdata.append(f"{symbol}") 
             rowdata.append("OK TO TRADE REVERSAL") 
@@ -358,7 +358,7 @@ def retrieve_and_sell(current_price, df, symbol, rowdata, sheet, logs_sheet):
         now_time = now_time.strftime(fmt)
         if rsilist[1] >= 70 and rsilist[0] <= 70:
             rowdata = []
-            log_to_sheet(logs_sheet, "Symbol", symbol, " SELL", "REVERSAL") 
+            log_to_sheet(logs_sheet, f"Symbol {symbol} SELL REVERSAL") 
             rowdata.append(now_time)
             rowdata.append(f"{symbol}") 
             rowdata.append("OK TO SELL REVERSAL") 
