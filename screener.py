@@ -1,3 +1,4 @@
+import os
 from pyfinviz.screener import Screener
 from google.oauth2 import service_account
 import time

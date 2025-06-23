@@ -404,7 +404,7 @@ list_of_spy_stocks.remove('BF.B')
 list_of_stocks = get_all_finviz_stocks(spreadsheet)
     
 d = datetime.today() - timedelta(days=210)
-log_to_sheet(logs_sheet, f"Start date: {d.date()}")
+log_to_sheet(logs_sheet, f"Start date: {datetime.today()}")
 
 df = yf.download(tickers=list_of_spy_stocks, start=d.date(), end=date.today())
 
@@ -480,3 +480,4 @@ for item in list_of_stocks:
     retrieve_and_store(current_price, df, item,rowdata, share_sheet,logs_sheet)
     retrieve_and_sell(current_price, df, item,rowdata, sell_sheet,logs_sheet)
     time.sleep(1)  # Sleep for 5 seconds
+log_to_sheet(logs_sheet, f"Finished: {datetime.today()}")
