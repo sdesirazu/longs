@@ -326,7 +326,6 @@ def retrieve_and_store(current_price, df, symbol, rowdata, sheet, logs_sheet):
     if rsi_series.empty:
         log_to_sheet(logs_sheet, "RSI calculation returned an empty Series.")
     else:
-        rsi = df.ta.rsi().iloc[-1:].iloc[0]
         # check if rsi has reversed.  It needs to be above 30 now and in  previousndays below 30
         rsilist = df.ta.rsi().tolist()
         rsilist.reverse()
@@ -349,7 +348,6 @@ def retrieve_and_sell(current_price, df, symbol, rowdata, sheet, logs_sheet):
     if rsi_series.empty:
         log_to_sheet(logs_sheet,"RSI calculation returned an empty Series.")
     else:
-        rsi = df.ta.rsi().iloc[-1:].iloc[0]
         # check if rsi has reversed.  It needs to be below 70 now and above 70 yesterday
         rsilist = df.ta.rsi().tolist()
         rsilist.reverse()
