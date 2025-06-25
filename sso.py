@@ -327,19 +327,25 @@ def retrieve_and_store(current_price, df, symbol, rowdata, sheet, logs_sheet):
         log_to_sheet(logs_sheet, "RSI calculation returned an empty Series.")
     else:
         # check if rsi has reversed.  It needs to be above 30 now and in  previousndays below 30
-        rsilist = df.ta.rsi().tolist()
-        rsilist.reverse()
-        now_time = datetime.now(timezone('Australia/Sydney'))
-        fmt = "%Y-%m-%d %H:%M:%S %Z%z"
-        now_time = now_time.strftime(fmt)
-        if rsilist[0] >= 30 and rsilist[1] <= 30:
-            rowdata = []
-            log_to_sheet(logs_sheet, f"Symbol {symbol}, TRADE REVERSAL") 
-            rowdata.append(now_time)
-            rowdata.append(f"{symbol}") 
-            rowdata.append("OK TO TRADE REVERSAL") 
-            rowdata.append(current_price) 
-            sheet.append_row(rowdata)
+        rsi_series = df.ta.rsi()
+
+        # Check if the variable is a Pandas Series
+        if isinstance(rsi_series, pd.Series):
+            rsilist = df.ta.rsi().tolist()
+            rsilist.reverse()
+            now_time = datetime.now(timezone('Australia/Sydney'))
+            fmt = "%Y-%m-%d %H:%M:%S %Z%z"
+            now_time = now_time.strftime(fmt)
+            if rsilist[0] >= 30 and rsilist[1] <= 30:
+                rowdata = []
+                log_to_sheet(logs_sheet, f"Symbol {symbol}, TRADE REVERSAL") 
+                rowdata.append(now_time)
+                rowdata.append(f"{symbol}") 
+                rowdata.append("OK TO TRADE REVERSAL") 
+                rowdata.append(current_price) 
+                sheet.append_row(rowdata)
+        else:
+            log_to_sheet(logs_sheet, "The variable is not a Pandas Series.")
     
 def retrieve_and_sell(current_price, df, symbol, rowdata, sheet, logs_sheet):
 
@@ -348,20 +354,27 @@ def retrieve_and_sell(current_price, df, symbol, rowdata, sheet, logs_sheet):
     if rsi_series.empty:
         log_to_sheet(logs_sheet,"RSI calculation returned an empty Series.")
     else:
-        # check if rsi has reversed.  It needs to be below 70 now and above 70 yesterday
-        rsilist = df.ta.rsi().tolist()
-        rsilist.reverse()
-        now_time = datetime.now(timezone('Australia/Sydney'))
-        fmt = "%Y-%m-%d %H:%M:%S %Z%z"
-        now_time = now_time.strftime(fmt)
-        if rsilist[1] >= 70 and rsilist[0] <= 70:
-            rowdata = []
-            log_to_sheet(logs_sheet, f"Symbol {symbol} SELL REVERSAL") 
-            rowdata.append(now_time)
-            rowdata.append(f"{symbol}") 
-            rowdata.append("OK TO SELL REVERSAL") 
-            rowdata.append(current_price) 
-            sheet.append_row(rowdata)
+        # check if rsi has reversed.  It needs to be above 30 now and in  previousndays below 30
+        rsi_series = df.ta.rsi()
+
+        # Check if the variable is a Pandas Series
+        if isinstance(rsi_series, pd.Series):
+            # check if rsi has reversed.  It needs to be below 70 now and above 70 yesterday
+            rsilist = df.ta.rsi().tolist()
+            rsilist.reverse()
+            now_time = datetime.now(timezone('Australia/Sydney'))
+            fmt = "%Y-%m-%d %H:%M:%S %Z%z"
+            now_time = now_time.strftime(fmt)
+            if rsilist[1] >= 70 and rsilist[0] <= 70:
+                rowdata = []
+                log_to_sheet(logs_sheet, f"Symbol {symbol} SELL REVERSAL") 
+                rowdata.append(now_time)
+                rowdata.append(f"{symbol}") 
+                rowdata.append("OK TO SELL REVERSAL") 
+                rowdata.append(current_price) 
+                sheet.append_row(rowdata)
+        else:
+            log_to_sheet(logs_sheet, "The variable is not a Pandas Series.")
 
 ##################################################
 [sheet, spreadsheet] = connect_sheet()
