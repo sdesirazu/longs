@@ -30,7 +30,7 @@ jobs:
         echo "numpy"
         pip install lxml
         echo "lxml"
-        pip install --upgrade pandas_ta
+        pip install pandas-ta
         echo "pandas_ta"
         pip install flake8 pytest
         echo "flake8 pytest"
