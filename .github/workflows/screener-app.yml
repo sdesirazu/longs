@@ -27,16 +27,27 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install numpy==1.26.4
+        echo "numpy"
         pip install lxml
+        echo "lxml"
         pip install --upgrade pandas_ta
+        echo "pandas_ta"
         pip install flake8 pytest
+        echo "flake8 pytest"
         pip install pandas yfinance
+        echo "pandas yfinance"
         pip install gspread
+        echo "gspread"
         pip install --upgrade google-auth
+        echo "google-auth"
         pip install pypnf
+        echo "pypnf"
         pip install google-api-python-client
+        echo "google-api-python-client"
         pip install SciPy
+        echo "scipy"
         pip install pyfinviz
+        echo "pyfinviz"
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: run application
       run: |
