@@ -58,8 +58,8 @@ for i in range(1,pages):
 
     worksheet.append_rows(big_rows)
     print("Program will pause for 5 seconds...")
-    time.sleep(5)  # Sleep for 5 seconds
-    print("Program resumed after 5 seconds.")
+    time.sleep(4)  # Sleep for 5 seconds
+    print("Program resumed after 4 seconds.")
 
 
     print("DataFrame written to Google Sheet successfully!")
